@@ -1,32 +1,27 @@
-import React from 'react'
-import { useQuery } from '@apollo/react-hooks'
-import gql from 'graphql-tag'
-import PropTypes from 'prop-types'
+import React from "react";
+import PropTypes from "prop-types";
+import { AxiosContext } from "../context/AxiosContext";
+import { useContext } from "react";
 
-import { getConfiguration } from '../apollo/server'
+const ConfigurationContext = React.createContext({});
 
-const GETCONFIGURATION = gql`
-  ${getConfiguration}
-`
-
-const ConfigurationContext = React.createContext({})
-
-export const ConfigurationProvider = props => {
-  const { loading, data, error } = useQuery(GETCONFIGURATION)
+export const ConfigurationProvider = (props) => {
+  const { usePublicAxios } = useContext(AxiosContext);
+  const { loading, data, error } = usePublicAxios("configuration", "get");
   const configuration =
-    loading || error || !data.configuration
-      ? { currency: '', currency_symbol: '', delivery_charges: 0 }
-      : data.configuration
+    loading || error || !data
+      ? { currency: "", currencySymbol: "", deliveryCharges: 0 }
+      : data.configuration;
   return (
     <ConfigurationContext.Provider value={configuration}>
       {props.children}
     </ConfigurationContext.Provider>
-  )
-}
+  );
+};
 
 ConfigurationProvider.propTypes = {
-  children: PropTypes.node.isRequired
-}
+  children: PropTypes.node.isRequired,
+};
 
-export const ConfigurationConsumer = ConfigurationContext.Consumer
-export default ConfigurationContext
+export const ConfigurationConsumer = ConfigurationContext.Consumer;
+export default ConfigurationContext;

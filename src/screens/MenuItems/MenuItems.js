@@ -42,13 +42,13 @@ function MenuItems() {
   const styles = useStyle();
   const headerHeight = useHeaderHeight();
   const navigation = useNavigation();
-  const _id = route.params._id ?? null;
-  const imgMenu = route.params.img_menu ?? null;
-  const title = route.params.title ?? null;
+  const _id = route.params.id ?? null;
+  const imgMenu = route.params.imageUrl ?? null;
+  const title = route.params.name ?? null;
   const description = route.params.description ?? null;
   const [filters, setFilters] = useState({});
   const { loading, error, data, refetch, networkStatus } = useQuery(FOODS, {
-    variables: { category: _id, ...filters },
+    variables: { category: id, ...filters },
   });
   const { addCartItem } = useContext(UserContext);
   const configuration = useContext(ConfigurationContext);

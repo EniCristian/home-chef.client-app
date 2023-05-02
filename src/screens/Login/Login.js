@@ -1,8 +1,6 @@
-import { useMutation } from "@apollo/react-hooks";
 import { useNavigation, useTheme } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
-import gql from "graphql-tag";
 import React, { useContext, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -16,7 +14,6 @@ import {
 import { FilledTextField } from "react-native-material-textfield";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import i18n from "../../../i18n";
-import { login } from "../../apollo/server";
 import {
   EnategaImage,
   FlashMessage,
@@ -30,11 +27,7 @@ import Analytics from "../../utils/analytics";
 import { NAVIGATION_SCREEN } from "../../utils/constant";
 import { scale, verticalScale } from "../../utils/scaling";
 import useStyle from "./styles";
-
-// Constants
-const LOGIN = gql`
-  ${login}
-`;
+import { AxiosContext } from "../../context/AxiosContext";
 
 const Logo = require("../../../assets/logo.png");
 
@@ -51,8 +44,7 @@ function Login() {
   const [emailError, setEmailError] = useState("");
   const { setTokenAsync, logout } = useContext(UserContext);
   const [passwordError, setPasswordError] = useState(null);
-
-  const [mutate] = useMutation(LOGIN, { onCompleted, onError });
+  const { publicAxios } = useContext(AxiosContext);
 
   useEffect(() => {
     _didFocusSubscription = navigation.addListener("didFocus", () => {
@@ -153,7 +145,15 @@ function Login() {
             .data;
         }
       }
-      mutate({ variables: { ...user, notificationToken } });
+      publicAxios
+        .post("/login", {
+          email,
+          password,
+        })
+        .then((data) => {
+          onCompleted(data);
+        })
+        .catch((error) => onError(error));
     } catch (e) {
       console.log(e);
     } finally {

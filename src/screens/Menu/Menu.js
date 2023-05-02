@@ -1,10 +1,8 @@
-import { useQuery } from "@apollo/react-hooks";
 import { useNavigation } from "@react-navigation/native";
-import gql from "graphql-tag";
 import React, { useContext, useLayoutEffect } from "react";
 import { FlatList, View } from "react-native";
-import { categories } from "../../apollo/server";
 import EmptyFood from "../../assets/images/SVG/imageComponents/EmptyFood";
+import { AxiosContext } from "../../context/AxiosContext";
 import {
   MenuCard,
   Spinner,
@@ -18,17 +16,14 @@ import { alignment } from "../../utils/alignment";
 import { NAVIGATION_SCREEN } from "../../utils/constant";
 import { scale } from "../../utils/scaling";
 import useStyle from "./styles";
-
 // constants
-const CATEGORIES = gql`
-  ${categories}
-`;
 
 function Menu() {
   const styles = useStyle();
   const navigation = useNavigation();
+  const { usePublicAxios } = useContext(AxiosContext);
   const { isLoggedIn, profile } = useContext(UserContext);
-  const { data, refetch, networkStatus, loading, error } = useQuery(CATEGORIES);
+  let { data, loading, error } = usePublicAxios("recipeCategories", "get");
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -67,9 +62,7 @@ function Menu() {
           showsVerticalScrollIndicator={false}
           keyExtractor={(item, index) => String(index)}
           ListEmptyComponent={emptyView()}
-          data={loading ? [] : error ? [] : data.categories}
-          refreshing={networkStatus === 4}
-          onRefresh={() => refetch()}
+          data={loading ? [] : error ? [] : data}
           ListHeaderComponent={() => {
             if (!error && !loading) {
               return (
@@ -85,16 +78,16 @@ function Menu() {
             return null;
           }}
           renderItem={({ item }) => (
-            <View key={item._id} style={styles.cardViewContainer}>
+            <View key={item.id} style={styles.cardViewContainer}>
               <MenuCard
                 onPress={() =>
                   navigation.navigate(NAVIGATION_SCREEN.MenuItems, {
                     ...item,
                   })
                 }
-                title={item.title}
+                title={item.name}
                 description={item.description}
-                image={item.img_menu || ""}
+                image={item.imageUrl || ""}
               />
             </View>
           )}
